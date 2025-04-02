@@ -1,6 +1,6 @@
 # dedida
 
-Practice German.
+Der, die, oder das? Practice German.
 
 ## Getting Started
 
