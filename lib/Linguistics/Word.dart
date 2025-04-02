@@ -5,9 +5,10 @@ class Word {
   final String gender;
   final String root;
 
-  const Word({required this.id, required this.gender, required this.root});
+  Word({required this.id, required this.gender, required this.root});
   @override
   String toString() {
     return "Word id: $id, gender: $gender, root: $root";
   }
+  Word.fromMap(Map<String, dynamic> map) : id = map["pk"], gender = map["gender"], root = map["root"];
 }

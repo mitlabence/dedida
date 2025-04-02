@@ -1,0 +1,1 @@
+// TODO: create Gender, Root, etc. linguistic element representations as classes instead of strings
