@@ -48,11 +48,15 @@ class _QuizViewState extends State<QuizView> {
         });
   }
 
-  void checkTip(bool isCorrect) async {
+
+  void checkTip(Word word, bool isCorrect) async {
     total++;
     if (isCorrect) {
       score++;
     }
+    // TODO: add word to encountered word, or update word
+    DateTime dt = DateTime.now();
+    await widget.sessionOrchestrator.encounterWord(word, isCorrect, dt);
     await Future.delayed(Duration(seconds: 2));
     widget.sessionOrchestrator.streamNextWordQuestion();
   }

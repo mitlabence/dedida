@@ -6,7 +6,7 @@ import '../WordQuestion.dart';
 
 class WordQuizWidget extends StatefulWidget {
   final WordQuestion wordQuestion;
-  final void Function(bool isCorrectAnswer)
+  final void Function(Word word, bool isCorrectAnswer)
       onAnswered; // Trigger the moving on to next question, updating score etc.
   final int? score;
   final int? total;
@@ -30,17 +30,16 @@ class _WordQuizWidgetState extends State<WordQuizWidget> {
   int? _tappedAnswerIndex;
 
   void handleAnswerTap(int index) {
-    print("Pressed button $index");
     // Do nothing if buttons locked
     if (buttonsLocked) {
-      print("buttons locked");
       return;
     }
+    Word word = widget.wordQuestion.word;
     // lock buttons, call onAnswered()
     _tappedAnswerIndex = index;
     bool isCorrect =
         _tappedAnswerIndex == widget.wordQuestion.correctAnswerIndex;
-    widget.onAnswered(isCorrect);
+    widget.onAnswered(word, isCorrect);
     // Lock buttons, change tapped button color to green/red depending on whether correct answer
     setState(() {
       //buttonsLocked = true;
@@ -51,7 +50,6 @@ class _WordQuizWidgetState extends State<WordQuizWidget> {
 
   @override
   void initState() {
-    print("initstate of wordquizwidget");
     super.initState();
     _buttonColors =
         List.filled(widget.wordQuestion.answers.length, Colors.white);

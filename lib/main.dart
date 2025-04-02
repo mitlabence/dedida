@@ -4,7 +4,7 @@ import 'DBHelper.dart';
 import 'package:sqflite/sqflite.dart';
 import 'Views/QuizView.dart';
 import 'Views/SettingsView.dart';
-import 'Views/UserOverview.dart';
+import 'Views/EncounteredWordsView.dart';
 
 // TODO: if sqflite does not work on desktop, switch to drift? ( built on SQLite too)
 //TODO: add definition (as clickable to show) to words! Have to update database?
@@ -72,7 +72,7 @@ class _MainScreenState extends State<MainScreen> {
       QuizView(
         sessionOrchestrator: widget.sessionOrchestrator,
       ),
-      UserOverview(
+      EncounteredWordsView(
         sessionOrchestrator: widget.sessionOrchestrator,
       ),
       SettingsView(

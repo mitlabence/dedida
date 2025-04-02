@@ -3,13 +3,13 @@ import sqlite3
 import os
 
 # define data columns and corresponding sqlite data types (and set primary key column)
-dict_sqlite_types = {"index": "INTEGER PRIMARY KEY", "Lemma": "TEXT", "URL": "TEXT", "Wortart": "TEXT", "Genus": "TEXT", "Artikel": "TEXT", "nur_im_Plural": "TEXT"} 
+dict_sqlite_types = {"index": "INTEGER PRIMARY KEY", "level": "TEXT", "Lemma": "TEXT", "URL": "TEXT", "Wortart": "TEXT", "Genus": "TEXT", "Artikel": "TEXT", "nur_im_Plural": "TEXT"} 
 
 def get_sqlite_create_table_command(table_name: str):
     """
     Returns the SQL command to create a table in SQLite
     """
-    return f"CREATE TABLE {table_name} (pk INTEGER PRIMARY KEY, Lemma TEXT, URL TEXT, Wortart TEXT, Genus TEXT, Artikel TEXT, nur_im_Plural TEXT)"
+    return f"CREATE TABLE {table_name} (pk INTEGER PRIMARY KEY, level TEXT, Lemma TEXT, URL TEXT, Wortart TEXT, Genus TEXT, Artikel TEXT, nur_im_Plural TEXT)"
 
 # assuming the script is in dedida/scripts/, move to dedida/data
 script_dir = os.path.dirname(__file__)
@@ -23,6 +23,14 @@ fpath_dataset_b1 = os.path.join(data_folder, "B1.csv")
 df_a1 = pd.read_csv(fpath_dataset_a1)
 df_a2 = pd.read_csv(fpath_dataset_a2)
 df_b1 = pd.read_csv(fpath_dataset_b1)
+# add level
+df_a1["level"] = "A1"
+df_a2["level"] = "A2"
+df_b1["level"] = "B1"
+
+# assert columns for all dataframes match, then concatenate them
+assert df_a1.columns.tolist() == df_a2.columns.tolist() == df_b1.columns.tolist()
+df = pd.concat([df_a1, df_a2, df_b1], ignore_index=True)
 
 # Create a connection to a new SQLite database in dedida/assets folder
 db_path = os.path.join(os.path.dirname(script_dir), "assets", "dedida.db")
@@ -33,14 +41,10 @@ conn = sqlite3.connect(db_path)
 c = conn.cursor()
 
 # create empty tables first
-c.execute(get_sqlite_create_table_command("A1"))
-c.execute(get_sqlite_create_table_command("A2"))
-c.execute(get_sqlite_create_table_command("B1"))
+c.execute(get_sqlite_create_table_command("vocabulary"))
 
-# append the dataframes to the database tables
-df_a1.to_sql("A1", conn, if_exists="append", dtype=dict_sqlite_types, index=True, index_label="pk")
-df_a2.to_sql("A2", conn, if_exists="append", dtype=dict_sqlite_types, index=True, index_label="pk")
-df_b1.to_sql("B1", conn, if_exists="append", dtype=dict_sqlite_types, index=True, index_label="pk")
+# append the dataframes to the (empty) database tables
+df.to_sql("vocabulary", conn, if_exists="append", dtype=dict_sqlite_types, index=True, index_label="pk")
 
 # Commit the changes and close the connection
 conn.commit()
