@@ -23,18 +23,11 @@ class _EncounteredWordsViewState extends State<EncounteredWordsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Encountered Words")),
+        appBar: AppBar(title: Text("Encountered Words: right / total")),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                height: 20,
-                child: Text("Word: # correct / # encountered"),
-              ),
-              FutureBuilder(
-                  future: encounteredWordsFuture, builder: (context, snapshot) {
+          child: FutureBuilder(
+              future: encounteredWordsFuture,
+              builder: (context, snapshot) {
                 switch (snapshot.connectionState) {
                   case ConnectionState.waiting:
                     return CircularProgressIndicator();
@@ -43,20 +36,21 @@ class _EncounteredWordsViewState extends State<EncounteredWordsView> {
                   case ConnectionState.done:
                     if (snapshot.hasError) {
                       return Text("Error: ${snapshot.error}");
-                    }
-                    else if (snapshot.hasData) {
+                    } else if (snapshot.hasData) {
                       // has List<EncounteredWord>
                       List<EncounteredWord> encounteredWords = snapshot.data!;
-                      if (encounteredWords.isEmpty){
+                      if (encounteredWords.isEmpty) {
                         return Text("No entries found.");
                       }
                       return ListView.builder(
                           itemCount: encounteredWords.length,
                           prototypeItem: ListTile(
-                              title: Text("${encounteredWords.first.root}: ${encounteredWords.first.timesCorrect} / ${encounteredWords.first.timesReviewed}")),
+                              title: Text(
+                                  "${encounteredWords.first.root}: ${encounteredWords.first.timesCorrect} / ${encounteredWords.first.timesReviewed}")),
                           itemBuilder: (context, index) {
                             return ListTile(
-                                title: Text("${encounteredWords[index].root}: ${encounteredWords[index].timesCorrect} / ${encounteredWords[index].timesReviewed}"));
+                                title: Text(
+                                    "${encounteredWords[index].root}: ${encounteredWords[index].timesCorrect} / ${encounteredWords[index].timesReviewed}"));
                           });
                     }
                     return Text("No data found.");
@@ -64,8 +58,6 @@ class _EncounteredWordsViewState extends State<EncounteredWordsView> {
                     return Text("Unhandled connection state.");
                 }
               }),
-            ],
-          ),
         ));
   }
 }
