@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-import '../Linguistics/Word.dart';
+import '../Word.dart';
 import '../WordQuestion.dart';
 
 class WordQuizWidget extends StatefulWidget {
@@ -66,6 +66,7 @@ class _WordQuizWidgetState extends State<WordQuizWidget> {
       children: [
         Text(_scoreText),
         Text(widget.wordQuestion.word.root, style: TextStyle(fontSize: 30)),
+        Text(widget.wordQuestion.word.level, style: TextStyle(fontSize: 12)),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

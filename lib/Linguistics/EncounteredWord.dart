@@ -1,4 +1,4 @@
-import 'Word.dart';
+import '../Word.dart';
 // TODO: not null (required) requirement should match that of database (NOT NULL columns)...
 class EncounteredWord extends Word {
   final String dateEncountered; // Required parameter

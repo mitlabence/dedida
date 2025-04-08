@@ -1,7 +1,8 @@
 import 'package:dedida/SessionOrchestrator.dart';
 import 'package:dedida/WordQuestion.dart';
 import 'package:flutter/material.dart';
-import '../Linguistics/Word.dart';
+import '../Settings.dart';
+import '../Word.dart';
 import '../Widgets/WordQuizWidget.dart';
 //TODO: add colors to genders
 
@@ -19,6 +20,7 @@ class _QuizViewState extends State<QuizView> {
   int total = 0;
   WordQuestion? wordQuestion;
   late Stream<WordQuestion> wordQuestionStream;
+  late Settings settings;
 
   @override
   void initState() {
@@ -29,25 +31,45 @@ class _QuizViewState extends State<QuizView> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<WordQuestion>(
-        stream: widget.sessionOrchestrator.wordQuestionStream,
-        builder: (BuildContext context, AsyncSnapshot<WordQuestion> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else {
-            // Need to pass a (unique/new) key so WordQuizWidget is created anew
-            // Otherwise lockButtons, button colors etc. are not reset.
-            return WordQuizWidget(
-              key: ValueKey<int>(snapshot.data!.word.id),
-              wordQuestion: snapshot.data!,
-              onAnswered: checkTip,
-            );
-          }
-        });
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        FutureBuilder(
+            future: widget.sessionOrchestrator.getSettings(),
+            builder: (BuildContext context, AsyncSnapshot<Settings> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              } else if (snapshot.hasError) {
+                return Text("Error getting settings");
+              } else {
+                if (snapshot.hasData) {
+                  settings = snapshot.data!;
+                  return Text("Used datasets: ${settings.usedDatasets.join(", ")}");
+                }
+              }
+              return Text("No settings found");
+            }),
+        StreamBuilder<WordQuestion>(
+            stream: widget.sessionOrchestrator.wordQuestionStream,
+            builder:
+                (BuildContext context, AsyncSnapshot<WordQuestion> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return Center(child: CircularProgressIndicator());
+              } else if (snapshot.hasError) {
+                return Center(child: Text("Error: ${snapshot.error}"));
+              } else {
+                // Need to pass a (unique/new) key so WordQuizWidget is created anew
+                // Otherwise lockButtons, button colors etc. are not reset.
+                return WordQuizWidget(
+                  key: ValueKey<int>(snapshot.data!.word.id),
+                  wordQuestion: snapshot.data!,
+                  onAnswered: checkTip,
+                );
+              }
+            }),
+      ],
+    );
   }
-
 
   void checkTip(Word word, bool isCorrect) async {
     total++;

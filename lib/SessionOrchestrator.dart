@@ -8,12 +8,16 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:dedida/Linguistics/Word.dart';
+import 'package:dedida/Constants.dart';
+import 'package:dedida/Settings.dart';
+import 'package:dedida/Word.dart';
 import 'package:dedida/WordQuestion.dart';
-import 'package:dedida/utils.dart';
+import 'package:dedida/Utils.dart';
 import 'package:sqflite/sqflite.dart';
 import 'DBHelper.dart';
 import 'Linguistics/EncounteredWord.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 const List<String> buttonGenders = ["m", "f", "n"];
 const Map<String, String> genderArticlesMap = {
@@ -32,15 +36,18 @@ class SessionOrchestrator {
   }
 
   final StreamController<WordQuestion> _wordQuestionStreamController =
-      StreamController<WordQuestion>.broadcast();
+  StreamController<WordQuestion>.broadcast();
   final Queue<Word> _wordQueue = Queue<Word>();
 
   Stream<WordQuestion> get wordQuestionStream =>
       _wordQuestionStreamController.stream;
 
+  // TODO: make sure queue cannot contain other level words (not in settings!)
   void streamNextWordQuestion() async {
+    Settings settings = await getSettings();
+    List<String> levels = settings.usedDatasets;
     if (_wordQueue.isEmpty) {
-      await enqueueNextWord();
+      await enqueueNextWord(levels);
     }
     if (_wordQueue.isEmpty) {
       throw Exception("Queue is empty despite just adding to it");
@@ -60,28 +67,48 @@ class SessionOrchestrator {
         .add(wordQuestion); // Emit the question to the stream
   }
 
-  Future<void> enqueueNextWord() async {
+  Future<void> enqueueNextWord(List<String>? levels) async {
     // Put another word in the queue
-    Word nextWord = await getNextWord();
+    Word nextWord = await getNextWord(levels);
     _wordQueue.add(nextWord); // Add to the queue
   }
 
   // TODO: add getNextWords(int nWords)
-  Future<Word> getNextWord() async {
+  Future<Word> getNextWord(List<String>? levels) async {
     Database db = await DatabaseHelper.getDatabase();
-    List<Map<String, dynamic>> result = await db.query("vocabulary",
+    List<Map<String, dynamic>> result;
+
+    if (levels != null && levels.isNotEmpty) {
+      // Include the "level IN" clause if levels is not null or empty
+      result = await db.query(
+        "vocabulary",
+        columns: ["pk", "level", "Lemma", "Genus"],
+        where: "Artikel IS NOT NULL AND level IN (${List.filled(
+            levels.length, '?').join(', ')})",
+        whereArgs: levels,
+        orderBy: "RANDOM()",
+        limit: 1,
+      );
+    } else {
+      // Skip the "level IN" clause if levels is null or empty
+      result = await db.query(
+        "vocabulary",
         columns: ["pk", "level", "Lemma", "Genus"],
         where: "Artikel IS NOT NULL",
         orderBy: "RANDOM()",
-        limit: 1);
+        limit: 1,
+      );
+    }
+
+
     return result.isNotEmpty
         ? Word(
-            id: result.first['pk'] as int,
-            level: result.first['level'] as String,
-            root: result.first['Lemma'] as String,
-            gender: (result.first['Genus']
-                as String)[0], // only need first letter: m, f, n
-          )
+      id: result.first['pk'] as int,
+      level: result.first['level'] as String,
+      root: result.first['Lemma'] as String,
+      gender: (result.first['Genus']
+      as String)[0], // only need first letter: m, f, n
+    )
         : throw Exception('No results found');
   }
 
@@ -92,12 +119,12 @@ class SessionOrchestrator {
         where: "Artikel IS NOT NULL");
     return [
       for (final {
-            'pk': pk as int,
-            'level': level as String,
-            'Lemma': lemma as String,
-            'Genus': genus as String
-          } in result)
-        // TODO: fem., mask., neut. are the possible Genus entries (possibly multiple, separated by comma). Make Word able to handle multiple genders!
+      'pk': pk as int,
+      'level': level as String,
+      'Lemma': lemma as String,
+      'Genus': genus as String
+      } in result)
+      // TODO: fem., mask., neut. are the possible Genus entries (possibly multiple, separated by comma). Make Word able to handle multiple genders!
         Word(id: pk, level: level, root: lemma, gender: genus[0]),
     ];
   }
@@ -116,39 +143,38 @@ class SessionOrchestrator {
     print("Query successful: len = ${result.length}");
     return [
       for (final {
-            'word_id': wordId as int,
-            'level': level as String,
-            'Lemma': lemma as String,
-            'Genus': genus as String,
-            'date_encountered': dateEncountered as String,
-            'times_reviewed': timesReviewed as int,
-            'times_correct': timesCorrect as int,
-            'review_history': reviewHistory as int,
-            'is_mastered': isMastered as int,
-            'last_reviewed': lastReviewed as String,
-            'custom_notes': customNotes as String,
+      'word_id': wordId as int,
+      'level': level as String,
+      'Lemma': lemma as String,
+      'Genus': genus as String,
+      'date_encountered': dateEncountered as String,
+      'times_reviewed': timesReviewed as int,
+      'times_correct': timesCorrect as int,
+      'review_history': reviewHistory as int,
+      'is_mastered': isMastered as int,
+      'last_reviewed': lastReviewed as String,
+      'custom_notes': customNotes as String,
 
-            // TODO: add custom_notes if present (can be null)
-          } in result)
-        // TODO: fem., mask., neut. are the possible Genus entries (possibly multiple, separated by comma). Make Word able to handle multiple genders!
+      // TODO: add custom_notes if present (can be null)
+      } in result)
+      // TODO: fem., mask., neut. are the possible Genus entries (possibly multiple, separated by comma). Make Word able to handle multiple genders!
         EncounteredWord(
-          id: wordId,
-          level: level,
-          root: lemma,
-          gender: genus[0],
-          dateEncountered: dateEncountered,
-          timesReviewed: timesReviewed,
-          timesCorrect: timesCorrect,
-          reviewHistory: reviewHistory,
-          lastReviewed: lastReviewed,
-          isMastered: isMastered,
-          customNotes: customNotes
-        ),
+            id: wordId,
+            level: level,
+            root: lemma,
+            gender: genus[0],
+            dateEncountered: dateEncountered,
+            timesReviewed: timesReviewed,
+            timesCorrect: timesCorrect,
+            reviewHistory: reviewHistory,
+            lastReviewed: lastReviewed,
+            isMastered: isMastered,
+            customNotes: customNotes),
     ];
   }
 
-  Future<void> encounterWord(
-      Word word, bool isCorrect, DateTime lastEncounter) async {
+  Future<void> encounterWord(Word word, bool isCorrect,
+      DateTime lastEncounter) async {
     /// Update word in encountered_words table if there, or create new entry if
     /// not present in table.
     /// isCorrect: if true, latest encounter was "positive".
@@ -180,7 +206,7 @@ class SessionOrchestrator {
       String lastReviewed = dateTimeAsString(lastEncounter);
       // FIXME: dart passes by reference right? so reviewHistory = shiftAndAddBit() would be wrong? Or maybe newReviewHistory is not needed at all?
       int newReviewHistory =
-          shiftAndAddBit(reviewHistory, isCorrect, mask: 0xFFFFFFFF);
+      shiftAndAddBit(reviewHistory, isCorrect, mask: 0xFFFFFFFF);
       await db.update(
           'encountered_words',
           {
@@ -206,6 +232,88 @@ class SessionOrchestrator {
         "review_history": isCorrect ? 1 : 0
       });
     }
+  }
+
+  // TODO: implement this, dealing with data types too!
+  /*
+  Future<Map<String, dynamic>?> getNamedSettings(String name) async{
+    /// Get a specific setting, or null if it does not exist.
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+  }
+  */
+  Future<Settings> getSettings() async {
+    /// Get all the settings entries stored in SharedPreferences.
+    /// See shared_preferences.txt in the documentation for possible entries
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // TODO: extract into Settings class that handles loading etc...
+    //    I.e. this function should return a Setting
+    final List<String>? usedDatasets = prefs.getStringList("usedDatasets");
+    // assemble the Map object containing all settings
+    if (!(usedDatasets == null)) {
+      Map<String, dynamic> settingsMap = {};
+      settingsMap["usedDatasets"] = usedDatasets;
+      return Settings.fromMap(settingsMap);
+    }
+    // if no settings found, return the default settings
+    return Settings.fromMap(kDefaultSettings);
+  }
+
+  Future<void> saveSetting(String name, dynamic value) async {
+    /// Set a setting with the specified name to the specified value in
+    /// SharedPreferences
+    // TODO: make sure to check if value exists with any data type? Should not
+    // overwrite if invalid type! There should be constants defining types.
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (value is int) {
+      await prefs.setInt(name, value);
+    } else if (value is bool) {
+      await prefs.setBool(name, value);
+    } else if (value is double) {
+      await prefs.setDouble(name, value);
+    } else if (value is String) {
+      await prefs.setString(name, value);
+    } else if (value is List<String>) {
+      await prefs.setStringList(name, value);
+    } else {
+      throw StateError(
+          "Invalid setting type: $name : $value has type ${value.runtimeType}");
+    }
+  }
+
+  Future<void> saveSettingToSharedPreferences(SharedPreferences prefs,
+      String name, dynamic value) async {
+    /// Set a setting with the specified name to the specified value in
+    /// SharedPreferences
+    // TODO: make sure to check if value exists with any data type? Should not
+    // overwrite if invalid type! There should be constants defining types.
+    if (value is int) {
+      await prefs.setInt(name, value);
+    } else if (value is bool) {
+      await prefs.setBool(name, value);
+    } else if (value is double) {
+      await prefs.setDouble(name, value);
+    } else if (value is String) {
+      await prefs.setString(name, value);
+    } else if (value is List<String>) {
+      await prefs.setStringList(name, value);
+    } else {
+      throw StateError(
+          "Invalid setting type: $name : $value has type ${value.runtimeType}");
+    }
+  }
+
+  Future<void> saveSettings(Settings settings) async {
+    /// Save all the attributes of the Settings, overwrite completely those
+    /// attributes that are defined in Settings, but leave untouched those
+    /// not defined in Settings.
+    //TODO keep up to date with Settings class! How to make it automatically save?
+    // Create Settings.LoopOverAttributesNames, or create ToMap and loop over
+    // keys
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    settings.usedDatasets.sort();
+    await saveSettingToSharedPreferences(
+        prefs, "usedDatasets", settings.usedDatasets);
   }
 
   void dispose() {

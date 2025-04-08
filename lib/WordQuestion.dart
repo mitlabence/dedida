@@ -1,4 +1,4 @@
-import 'Linguistics/Word.dart';
+import 'Word.dart';
 
 class WordQuestion{
   final Word word;

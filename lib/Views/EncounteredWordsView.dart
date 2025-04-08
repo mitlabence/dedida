@@ -23,7 +23,7 @@ class _EncounteredWordsViewState extends State<EncounteredWordsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: Text("Encountered Words: right / total")),
+        appBar: AppBar(title: Text("Encountered Words: right / total, level")),
         body: Center(
           child: FutureBuilder(
               future: encounteredWordsFuture,
@@ -46,11 +46,11 @@ class _EncounteredWordsViewState extends State<EncounteredWordsView> {
                           itemCount: encounteredWords.length,
                           prototypeItem: ListTile(
                               title: Text(
-                                  "${encounteredWords.first.root}: ${encounteredWords.first.timesCorrect} / ${encounteredWords.first.timesReviewed}")),
+                                  "${encounteredWords.first.root}: ${encounteredWords.first.timesCorrect} / ${encounteredWords.first.timesReviewed}  ${encounteredWords.first.level}")),
                           itemBuilder: (context, index) {
                             return ListTile(
                                 title: Text(
-                                    "${encounteredWords[index].root}: ${encounteredWords[index].timesCorrect} / ${encounteredWords[index].timesReviewed}"));
+                                    "${encounteredWords[index].root}: ${encounteredWords[index].timesCorrect} / ${encounteredWords[index].timesReviewed} ${encounteredWords[index].level}"));
                           });
                     }
                     return Text("No data found.");

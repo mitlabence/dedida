@@ -1,0 +1,3 @@
+SharedPreferences is used to store the following settings:
+
+List<String> usedDatasets:
