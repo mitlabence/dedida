@@ -40,10 +40,6 @@ jobs:
             - name: Install dependencies
               run: flutter pub get
             # TODO: Add decode keystore step
-            - name: Run FlutterFire CLI
-              run: flutterfire configure
-              env:
-                FIREBASE_TOKEN: ${{ secrets.SERVICE_ACCOUNT_CREDENTIALS_JSON }}
             - name: build APK
               run: flutter build apk --release
             - name: build AAB
