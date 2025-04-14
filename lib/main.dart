@@ -5,6 +5,11 @@ import 'package:sqflite/sqflite.dart';
 import 'Views/QuizView.dart';
 import 'Views/SettingsView.dart';
 import 'Views/EncounteredWordsView.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+// ...
+
 
 // TODO: if sqflite does not work on desktop, switch to drift? ( built on SQLite too)
 //TODO: add definition (as clickable to show) to words! Have to update database?
@@ -13,6 +18,9 @@ import 'Views/EncounteredWordsView.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   final String dbpath = await getDatabasesPath();
   // TODO: set up database helper and session orchestrator here
   DatabaseHelper dataBaseHelper = DatabaseHelper();
