@@ -1,0 +1,30 @@
+JDK 21 should be used (gradlew script used as follows:
+gradlew signingReport for getting keys for Firebase for debugging).
+This could be changed in the end by creating the JAVA_HOME environmental variable (for user, not for
+system) and setting it to JDK 21 path (C:\\Program Files\\Java\\jdk-21 for me).
+This might cause issues elsewhere! A better approach would be (but did not seem to work) to use the
+jbr directory (3rd place in https://developer.android.com/build/jdks the list of where the android
+studio startup script looks for JVM)
+
+Once printing the keys with gradlew signingReport, copy BOTH SHA1 AND SHA256 keys! So have two keys
+for debugging.
+
+The package js is outdated! Not sure which package dragged it in the app. Should be upgraded to
+dart:js_interop
+
+WHen setting up firebase, do not try google sign in AND firebase at once. Start with firebase :
+https://firebase.google.com/docs/app-check/flutter/debug-provider
+Then one gets the debug key. The gradlew signingReport from above shows the debug SHA1 fingerprint,
+this has to be added to the app in the firebase console (the firebase project website). In the
+appcheck then, the app has to be registered for the project, I used Play Integrity. Then one can
+(must) add a debug key so the development can go on. For this, the
+await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.debug,
+    appleProvider: AppleProvider.debug,
+  );
+ must run, and then in Android Studio (Run tab), something like
+D/com.google.firebase.appcheck.debug.internal.DebugAppCheckProvider(30954): Enter this debug secret into the allow list in the Firebase Console for your project: ...
+followed by the debug token should appear. This should be copied to the AppCheck debug token.#
+After this, the google sign in can be added too.
+
+
