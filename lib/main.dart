@@ -40,7 +40,7 @@ void main() async {
     ); // https://firebase.google.com/docs/app-check/flutter/default-providers
     firebaseAppCheckToken = (await FirebaseAppCheck.instance.getToken())!;
     // FIXME: null check should not be forced...
-    await fbh.publishRandomStuff();
+    //await fbh.publishEncounteredWords(); // TODO: implement this on user click (in settings view)
   }
 
   // TODO: set up database helper and session orchestrator here
