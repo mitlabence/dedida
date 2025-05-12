@@ -13,6 +13,8 @@ jobs:
     build:
         name: Build & Release
         runs-on: macos-latest # want to release iOS version too
+        permissions:
+          contents: write
         steps:
             - name: Checkout
               uses: actions/checkout@v3
@@ -26,9 +28,18 @@ jobs:
               with:
                     flutter-version: '3.27.1'
                     channel: 'stable'
+            - name: Install FlutterFire CLI
+              run: |
+                dart pub global activate flutterfire_cli
+            - name: Setup firebase config
+              run: |
+                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d > firebase.json
+                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android\app\google-services.json
+                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d > lib\firebase_options.dart
+                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d > storage.rules
             - name: Install dependencies
               run: flutter pub get
-            # TODO: add decode keystore step
+            # TODO: Add decode keystore step
             - name: build APK
               run: flutter build apk --release
             - name: build AAB
@@ -40,7 +51,7 @@ jobs:
                 cd build
                 tar -czf ios_build.tar.gz ios
             - name: Upload artifacts
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                 name: Releases
                 path: |
@@ -71,4 +82,4 @@ jobs:
               with:
                 artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab,build/ios_build.tar.gz"
                 tag: v${{ env.VERSION }}
-                token: ${{ secrets.TOKEN }}
+                token: ${{ secrets.GITHUB_TOKEN  }}
