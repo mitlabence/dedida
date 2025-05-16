@@ -27,4 +27,20 @@ class EncounteredWord extends Word {
   String toString() {
     return "${super.toString()}, dateEncountered: $dateEncountered, timesReviewed: ${timesReviewed ?? 0}, reviewHistory: $reviewHistory";
   }
+
+  Map<String, dynamic> toMap() {
+    return {
+      "id": id,
+      "root": root,
+      "gender": gender,
+      "level": level,
+      "dateEncountered": dateEncountered,
+      "lastReviewed": lastReviewed,
+      "timesReviewed": timesReviewed,
+      "timesCorrect": timesCorrect,
+      "reviewHistory": reviewHistory,
+      "isMastered": isMastered,
+      "customNotes": customNotes ?? ""
+    };
+  }
 }

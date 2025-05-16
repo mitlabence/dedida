@@ -1,4 +1,6 @@
+import 'package:dedida/FirebaseHelper.dart';
 import 'package:dedida/SessionOrchestrator.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:flutter/material.dart';
 import 'DBHelper.dart';
 import 'package:sqflite/sqflite.dart';
@@ -7,9 +9,8 @@ import 'Views/SettingsView.dart';
 import 'Views/EncounteredWordsView.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-
-// ...
-
+import 'google_auth.dart';
+import 'global.dart';
 
 // TODO: if sqflite does not work on desktop, switch to drift? ( built on SQLite too)
 //TODO: add definition (as clickable to show) to words! Have to update database?
@@ -22,6 +23,26 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   final String dbpath = await getDatabasesPath();
+  final userCredential = await signInWithGoogle();
+  if (userCredential.user == null) {
+    // TODO: proper handling of sign-in error
+    throw Exception("Authentication failed. User is null!");
+  } else {
+    firebaseUid = userCredential.user!.uid;
+    FirebaseHelper fbh = FirebaseHelper();
+    await FirebaseAppCheck.instance.activate(
+      // Default provider for Android is the Play Integrity provider. You can use the "AndroidProvider" enum to choose
+      // your preferred provider. Choose from:
+      // 1. debug provider
+      // 2. safety net provider
+      // 3. play integrity provider
+      androidProvider: AndroidProvider.debug,
+    ); // https://firebase.google.com/docs/app-check/flutter/default-providers
+    firebaseAppCheckToken = (await FirebaseAppCheck.instance.getToken())!;
+    // FIXME: null check should not be forced...
+    //await fbh.publishEncounteredWords(); // TODO: implement this on user click (in settings view)
+  }
+
   // TODO: set up database helper and session orchestrator here
   DatabaseHelper dataBaseHelper = DatabaseHelper();
   SessionOrchestrator sessionOrchestrator = SessionOrchestrator();
@@ -57,8 +78,7 @@ class MainScreen extends StatefulWidget {
   const MainScreen(
       {super.key,
       required this.sessionOrchestrator,
-      required this.initialNavBarIndex
-      });
+      required this.initialNavBarIndex});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
