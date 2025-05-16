@@ -40,10 +40,10 @@ jobs:
                 pwd
             - name: Setup firebase config
               run: |
-                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\dedida\firebase.json
-                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\dedida\android\app\google-services.json
-                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\dedida\lib\firebase_options.dart
-                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\dedida\storage.rules
+                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\firebase.json
+                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\android\app\google-services.json
+                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\lib\firebase_options.dart
+                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE\storage.rules
             - name: Install dependencies
               run: flutter pub get
             # TODO: Add decode keystore step
