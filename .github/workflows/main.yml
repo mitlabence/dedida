@@ -3,10 +3,12 @@ name: Build
 on:
     push:
         branches:
+            - main
             - dev
             - test
     pull_request:
         branches:
+            - main
             - dev
             - test
 jobs:
@@ -31,19 +33,20 @@ jobs:
             - name: Install FlutterFire CLI
               run: |
                 dart pub global activate flutterfire_cli
-            - name: Debug Workspace
-              run: |
-                ls -R /Users/runner/work/dedida/dedida
-                pwd
-                ls -l
             - name: Setup firebase config
               run: |
-                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\firebase.json
-                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\android\app\google-services.json
-                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\lib\firebase_options.dart
-                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\storage.rules
+                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/firebase.json
+                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/android/app/google-services.json
+                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/lib/firebase_options.dart
+                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/storage.rules
+            - name: Check created files
+              run: |
+                ls $GITHUB_WORKSPACE
+                ls $GITHUB_WORKSPACE/lib
             - name: Install dependencies
-              run: flutter pub get
+              run: |
+                cd $GITHUB_WORKSPACE
+                flutter pub get
             # TODO: Add decode keystore step
             - name: build APK
               run: flutter build apk --release
