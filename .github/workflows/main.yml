@@ -31,6 +31,11 @@ jobs:
             - name: Install FlutterFire CLI
               run: |
                 dart pub global activate flutterfire_cli
+            - name: Debug Workspace
+              run: |
+                ls -R /Users/runner/work/dedida/dedida
+                pwd
+                ls -l
             - name: Setup firebase config
               run: |
                 echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\firebase.json
