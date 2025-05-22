@@ -47,11 +47,15 @@ jobs:
               run: |
                 cd $GITHUB_WORKSPACE
                 flutter pub get
-            # TODO: Add decode keystore step
+            # TODO: Add decode keystore step#
+            - name: clear keys
+              run: |
+                  keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+                  flutter clean
             - name: build APK
               run: flutter build apk --release
             - name: build AAB
-              run: flutter build appbundle
+              run: flutter build appbundle  -release
             - name: Upload artifacts
               uses: actions/upload-artifact@v4
               with:
