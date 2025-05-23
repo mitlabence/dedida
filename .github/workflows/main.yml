@@ -56,7 +56,7 @@ jobs:
               run: flutter build apk --release
             - name: build AAB
               run: flutter build appbundle  -release
-            - name: Sign app APK
+            - name: Sign apk
               uses: r0adkll/sign-android-release@v1
               # ID used to access action output
               id: sign_app
@@ -70,8 +70,8 @@ jobs:
                 # override default build-tools version (33.0.0) -- optional
                 BUILD_TOOLS_VERSION: "34.0.0"
               # Example use of `signedReleaseFile` output -- not needed
-            - name: Sign aab bundle
-              uses: roadkll/sign-android-release@v1
+            - name: Sign aab
+              uses: r0adkll/sign-android-release@v1
               id: sign_aab
               with:
                 releaseDirectory: build/app/outputs/flutter-apk
