@@ -61,11 +61,10 @@ jobs:
               # ID used to access action output
               id: sign_app
               with:
-                releaseDirectory: app/build/outputs/apk/release
-                signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-                alias: ${{ secrets.ALIAS }}
-                keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-                keyPassword: ${{ secrets.KEY_PASSWORD }}
+                releaseDirectory: build/app/outputs/flutter-apk
+                signingKeyBase64: ${{ secrets.UPLOADKEYSTOREBASE64 }}
+                alias: ${{ secrets.UPLOAD_KEY_ALIAS }}
+                keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
               env:
                 # override default build-tools version (33.0.0) -- optional
                 BUILD_TOOLS_VERSION: "34.0.0"
@@ -74,7 +73,7 @@ jobs:
               uses: r0adkll/sign-android-release@v1
               id: sign_aab
               with:
-                releaseDirectory: build/app/outputs/flutter-apk
+                releaseDirectory: build/app/outputs/bundle/release
                 signingKeyBase64: ${{secrets.UPLOADKEYSTOREBASE64}}
                 alias: ${{secrets.UPLOAD_KEY_ALIAS}}
                 keyStorePassword: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
