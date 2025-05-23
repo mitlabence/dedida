@@ -55,7 +55,7 @@ jobs:
             - name: build APK
               run: flutter build apk --release
             - name: build AAB
-              run: flutter build appbundle  -release
+              run: flutter build appbundle  --release
             - name: Sign apk
               uses: r0adkll/sign-android-release@v1
               # ID used to access action output
