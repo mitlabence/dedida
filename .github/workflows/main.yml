@@ -56,27 +56,27 @@ jobs:
               run: flutter build apk --release
             - name: build AAB
               run: flutter build appbundle  --release
-            #- name: Sign apk
-            #  uses: r0adkll/sign-android-release@v1
-            #  # ID used to access action output
-            #  id: sign_app
-            #  with:
-            #    releaseDirectory: build/app/outputs/flutter-apk
-            #    signingKeyBase64: ${{ secrets.UPLOADKEYSTOREBASE64 }}
-            #    alias: ${{ secrets.UPLOAD_KEY_ALIAS }}
-            #    keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
-            #  env:
-            #    # override default build-tools version (33.0.0) -- optional
-            #    BUILD_TOOLS_VERSION: "34.0.0"
-            #  # Example use of `signedReleaseFile` output -- not needed
-            #- name: Sign aab
-            #  uses: r0adkll/sign-android-release@v1
-            #  id: sign_aab
-            #  with:
-            #    releaseDirectory: build/app/outputs/bundle/release
-            #    signingKeyBase64: ${{secrets.UPLOADKEYSTOREBASE64}}
-            #    alias: ${{secrets.UPLOAD_KEY_ALIAS}}
-            #    keyStorePassword: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
+            - name: Sign apk
+              uses: r0adkll/sign-android-release@v1
+              # ID used to access action output
+              id: sign_app
+              with:
+                releaseDirectory: build/app/outputs/flutter-apk
+                signingKeyBase64: ${{ secrets.UPLOADKEYSTOREBASE64 }}
+                alias: ${{ secrets.UPLOAD_KEY_ALIAS }}
+                keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+              env:
+                # override default build-tools version (33.0.0) -- optional
+                BUILD_TOOLS_VERSION: "34.0.0"
+              # Example use of `signedReleaseFile` output -- not needed
+            - name: Sign aab
+              uses: r0adkll/sign-android-release@v1
+              id: sign_aab
+              with:
+                releaseDirectory: build/app/outputs/bundle/release
+                signingKeyBase64: ${{secrets.UPLOADKEYSTOREBASE64}}
+                alias: ${{secrets.UPLOAD_KEY_ALIAS}}
+                keyStorePassword: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
             - name: Debug file paths
               run: ls -R build/app/outputs
             - name: upload signed artifact
