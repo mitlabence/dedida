@@ -43,7 +43,7 @@ jobs:
               run: |
                 mkdir -p $GITHUB_WORKSPACE/secrets
                 echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
-                sha256sum $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
+                shasum -a 256 $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
               env:
                 UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
             - name: Decode key.properties
