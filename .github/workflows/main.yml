@@ -41,14 +41,12 @@ jobs:
                 echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/storage.rules
             - name: Decode upload keystore
               run: |
-                echo "$UPLOAD_KEYSTORE" | certutil -decode -f upload_keystore_derdiedas.b64 $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
-                rm $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.b64
+                echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
               env:
                 UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
             - name: Decode key.properties
               run: |
-                echo "$KEY_PROPERTIES" | certutil -decode -f key_properties.b64 $GITHUB_WORKSPACE/android/key.properties
-                rm $GITHUB_WORKSPACE/android/key_properties.b64
+                echo "$KEY_PROPERTIES" | base64 --decode > $GITHUB_WORKSPACE/android/key.properties
               env:
                 KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
             - name: Check created files
