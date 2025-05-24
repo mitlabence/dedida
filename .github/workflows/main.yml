@@ -42,18 +42,21 @@ jobs:
             - name: Decode upload keystore
               run: |
                 mkdir -p $GITHUB_WORKSPACE/secrets
-                echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
+                echo "$UPLOAD_KEYSTORE_BASE64" >> $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks.b64
+                base64 --decode $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks.b64 > $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
                 shasum -a 256 $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
               env:
                 UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
             - name: Decode key.properties
-              run: echo "$KEY_PROPERTIES" | base64 --decode > $GITHUB_WORKSPACE/android/key.properties
+              run: | 
+                echo "$KEY_PROPERTIES" >> $GITHUB_WORKSPACE/android/key.properties.base64
+                base64 --decode $GITHUB_WORKSPACE/android/key.properties.base64 > $GITHUB_WORKSPACE/android/key.properties
               env:
                 KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
             - name: Check created files
               run: |
-                ls $GITHUB_WORKSPACE
-                ls $GITHUB_WORKSPACE/lib
+                ls -l $GITHUB_WORKSPACE
+                ls -l $GITHUB_WORKSPACE/lib
             - name: Install dependencies
               run: |
                 cd $GITHUB_WORKSPACE
@@ -73,7 +76,7 @@ jobs:
               id: sign_app
               with:
                 releaseDirectory: build/app/outputs/flutter-apk
-                signingKeyBase64: ${{ secrets.UPLOADKEYSTOREBASE64 }}
+                signingKeyBase64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
                 alias: ${{ secrets.UPLOAD_KEY_ALIAS }}
                 keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
               env:
