@@ -40,7 +40,9 @@ jobs:
                 echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/lib/firebase_options.dart
                 echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/storage.rules
             - name: Decode upload keystore
-              run: echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
+              run: |
+                mkdir -p $GITHUB_WORKSPACE/secrets
+                echo "$UPLOAD_KEYSTORE_BASE64" | base64 --decode > $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
               env:
                 UPLOAD_KEYSTORE: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
             - name: Decode key.properties
