@@ -1,4 +1,4 @@
-package com.mitlabence.dedida
+package com.mitlabs.dedida
 
 import io.flutter.embedding.android.FlutterActivity
 
