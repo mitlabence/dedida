@@ -4,13 +4,9 @@ on:
     push:
         branches:
             - main
-            - dev
-            - test
     pull_request:
         branches:
             - main
-            - dev
-            - test
 jobs:
     build:
         name: Build & Release APK and AAB
