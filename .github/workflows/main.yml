@@ -41,7 +41,6 @@ jobs:
                 echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
             - name: Decode key.properties
               run: | 
-                echo "$KEY_PROPERTIES" >> $GITHUB_WORKSPACE/android/key.properties.base64
                 echo "${{ secrets.KEY_PROPERTIES }}" | base64 -d > $GITHUB_WORKSPACE/android/key.properties
             - name: Check created files
               run: |
