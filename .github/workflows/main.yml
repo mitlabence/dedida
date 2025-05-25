@@ -4,13 +4,9 @@ on:
     push:
         branches:
             - main
-            - dev
-            - test
     pull_request:
         branches:
             - main
-            - dev
-            - test
 jobs:
     build:
         name: Build & Release APK and AAB
@@ -39,10 +35,18 @@ jobs:
                 echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/android/app/google-services.json
                 echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/lib/firebase_options.dart
                 echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/storage.rules
+            - name: Decode upload keystore
+              run: |
+                mkdir -p $GITHUB_WORKSPACE/secrets
+                echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
+            - name: Decode key.properties
+              run: | 
+                echo "$KEY_PROPERTIES" >> $GITHUB_WORKSPACE/android/key.properties.base64
+                echo "${{ secrets.KEY_PROPERTIES }}" | base64 -d > $GITHUB_WORKSPACE/android/key.properties
             - name: Check created files
               run: |
-                ls $GITHUB_WORKSPACE
-                ls $GITHUB_WORKSPACE/lib
+                ls -l $GITHUB_WORKSPACE
+                ls -l $GITHUB_WORKSPACE/lib
             - name: Install dependencies
               run: |
                 cd $GITHUB_WORKSPACE
@@ -62,7 +66,7 @@ jobs:
               id: sign_app
               with:
                 releaseDirectory: build/app/outputs/flutter-apk
-                signingKeyBase64: ${{ secrets.UPLOADKEYSTOREBASE64 }}
+                signingKeyBase64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
                 alias: ${{ secrets.UPLOAD_KEY_ALIAS }}
                 keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
               env:
@@ -74,7 +78,7 @@ jobs:
               id: sign_aab
               with:
                 releaseDirectory: build/app/outputs/bundle/release
-                signingKeyBase64: ${{secrets.UPLOADKEYSTOREBASE64}}
+                signingKeyBase64: ${{secrets.UPLOAD_KEYSTORE_BASE64}}
                 alias: ${{secrets.UPLOAD_KEY_ALIAS}}
                 keyStorePassword: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
             - name: Debug file paths
