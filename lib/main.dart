@@ -36,7 +36,7 @@ void main() async {
       // 1. debug provider
       // 2. safety net provider
       // 3. play integrity provider
-      androidProvider: AndroidProvider.debug,
+      androidProvider: AndroidProvider.playIntegrity,
     ); // https://firebase.google.com/docs/app-check/flutter/default-providers
     firebaseAppCheckToken = (await FirebaseAppCheck.instance.getToken())!;
     // FIXME: null check should not be forced...

@@ -3,16 +3,14 @@ name: Build
 on:
     push:
         branches:
-            - dev
-            - test
+            - main
     pull_request:
         branches:
-            - dev
-            - test
+            - main
 jobs:
     build:
-        name: Build & Release
-        runs-on: macos-latest # want to release iOS version too
+        name: Build & Release APK and AAB
+        runs-on: macos-latest # want to release iOS version too. unfortunately, it is impossible
         permissions:
           contents: write
         steps:
@@ -33,31 +31,64 @@ jobs:
                 dart pub global activate flutterfire_cli
             - name: Setup firebase config
               run: |
-                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\firebase.json
-                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\android\app\google-services.json
-                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\lib\firebase_options.dart
-                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d > \Users\runner\work\dedida\dedida\storage.rules
+                echo "${{ secrets.FIREBASE_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/firebase.json
+                echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/android/app/google-services.json
+                echo "${{ secrets.FIREBASE_OPTIONS_DART_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/lib/firebase_options.dart
+                echo "${{ secrets.STORAGE_RULES_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/storage.rules
+            - name: Decode upload keystore
+              run: |
+                mkdir -p $GITHUB_WORKSPACE/secrets
+                echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d >  $GITHUB_WORKSPACE/secrets/upload_keystore_derdiedas.jks
+            - name: Decode key.properties
+              run: | 
+                echo "${{ secrets.KEY_PROPERTIES }}" | base64 -d > $GITHUB_WORKSPACE/android/key.properties
+            - name: Check created files
+              run: |
+                ls -l $GITHUB_WORKSPACE
+                ls -l $GITHUB_WORKSPACE/lib
             - name: Install dependencies
-              run: flutter pub get
-            # TODO: Add decode keystore step
+              run: |
+                cd $GITHUB_WORKSPACE
+                flutter pub get
+            # TODO: Add decode keystore step#
+            #- name: clear keys
+            #  run: |
+            #      keytool -genkey -v -keystore ~/upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+            #      flutter clean
             - name: build APK
               run: flutter build apk --release
             - name: build AAB
-              run: flutter build appbundle
-            - name: build iOS
-              run: flutter build ipa --no-codesign
-            - name: Compress Archives and IPAs
-              run: |
-                cd build
-                tar -czf ios_build.tar.gz ios
-            - name: Upload artifacts
+              run: flutter build appbundle  --release
+            - name: Sign apk
+              uses: r0adkll/sign-android-release@v1
+              # ID used to access action output
+              id: sign_app
+              with:
+                releaseDirectory: build/app/outputs/flutter-apk
+                signingKeyBase64: ${{ secrets.UPLOAD_KEYSTORE_BASE64 }}
+                alias: ${{ secrets.UPLOAD_KEY_ALIAS }}
+                keyStorePassword: ${{ secrets.UPLOAD_KEYSTORE_PASSWORD }}
+              env:
+                # override default build-tools version (33.0.0) -- optional
+                BUILD_TOOLS_VERSION: "34.0.0"
+              # Example use of `signedReleaseFile` output -- not needed
+            - name: Sign aab
+              uses: r0adkll/sign-android-release@v1
+              id: sign_aab
+              with:
+                releaseDirectory: build/app/outputs/bundle/release
+                signingKeyBase64: ${{secrets.UPLOAD_KEYSTORE_BASE64}}
+                alias: ${{secrets.UPLOAD_KEY_ALIAS}}
+                keyStorePassword: ${{secrets.UPLOAD_KEYSTORE_PASSWORD}}
+            - name: Debug file paths
+              run: ls -R build/app/outputs
+            - name: upload signed artifact
               uses: actions/upload-artifact@v4
               with:
-                name: Releases
+                name: Signed releases
                 path: |
-                  build/app/outputs/flutter-apk/app-release.apk
-                  build/app/outputs/bundle/release/app-release.aab
-                  build/ios_build.tar.gz
+                    build/app/outputs/bundle/release
+                    build/app/outputs/flutter-apk
             - name: Extract version from pubspec.yaml
               id: extract_version
               run: |
@@ -80,6 +111,6 @@ jobs:
             - name: Create Release
               uses: ncipollo/release-action@v1
               with:
-                artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab,build/ios_build.tar.gz"
+                artifacts: "build/app/outputs/flutter-apk/app-release.apk,build/app/outputs/bundle/release/app-release.aab" # build/ios_build.tar.gz not included
                 tag: v${{ env.VERSION }}
                 token: ${{ secrets.GITHUB_TOKEN  }}
