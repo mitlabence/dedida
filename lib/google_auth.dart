@@ -6,7 +6,13 @@ final GoogleSignIn googleSignIn = GoogleSignIn();
 
 Future<UserCredential> signInWithGoogle() async {
   // Trigger the Google authentication flow
-  final GoogleSignInAccount? googleSignInAccount = await googleSignIn.signIn();
+  final GoogleSignInAccount? googleSignInAccount;
+  try {
+    googleSignInAccount = await googleSignIn.signIn();
+  } catch (e) {
+    print("Google authentication failed: $e");
+    rethrow;
+  }
   if (googleSignInAccount != null) {
     // Obtain the auth details from the Google login
     final GoogleSignInAuthentication googleAuth =
