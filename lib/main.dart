@@ -11,6 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'google_auth.dart';
 import 'global.dart';
+import 'package:dedida/appcheck_provider_token.dart';
 
 // TODO: if sqflite does not work on desktop, switch to drift? ( built on SQLite too)
 //TODO: add definition (as clickable to show) to words! Have to update database?
@@ -36,7 +37,7 @@ void main() async {
       // 1. debug provider
       // 2. safety net provider
       // 3. play integrity provider
-      androidProvider: AndroidProvider.playIntegrity,
+      androidProvider: androidProviderToken,
     ); // https://firebase.google.com/docs/app-check/flutter/default-providers
     firebaseAppCheckToken = (await FirebaseAppCheck.instance.getToken())!;
     // FIXME: null check should not be forced...
